@@ -72,15 +72,17 @@ def LCS(a, b):
 
 class UF:
     def __init__(self, N):
-        self.parent = [i for i in range(N)]
+        self.state = [-1] * N
+        self.rank = [0] * N
+        self.num_group = N
     
     def get_parent(self, a):
-        p = self.parent[a]
-        if a == p:
+        p = self.state[a]
+        if p < 0:
             return a
         
         q = self.get_parent(p)
-        self.parent[a] = q
+        self.state[a] = q
         return q
 
     def make_pair(self, a, b):
@@ -88,12 +90,23 @@ class UF:
         pb = self.get_parent(b)
         if pa == pb:
             return
-        
-        self.parent[pa] = pb
-        self.parent[a] = pb
+
+        if self.rank[pa] > self.rank[pb]:
+            pa, pb = pb, pa
+            a, b = b, a
+        elif self.rank[pa] == self.rank[pb]:
+            self.rank[pb] += 1
+
+        self.state[pb] += self.state[pa]
+        self.state[pa] = pb
+        self.state[a] = pb
+        self.num_group -= 1
     
     def is_pair(self, a, b):
         return self.get_parent(a) == self.get_parent(b)
+
+    def get_size(self, a):
+        return -self.state[self.get_parent(a)]
 
 
 def mat_mul(X, Y, mod):
