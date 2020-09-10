@@ -260,6 +260,41 @@ class CS2:
         return S[h2][w2] - S[h2][w1] - S[h1][w2] + S[h1][w1]
  
 
+class SegmentTree:
+    def __init__(self, S, unit, funct):
+        N = len(S)
+        d = N.bit_length()
+        T = [unit for _ in range(2 ** (d + 1) - 1)]
+        for i, s in enumerate(S):
+            T[i + 2 ** d - 1] = s
+        for i in range(2 ** d - 2, -1, -1):
+            T[i] = funct(T[2 * i + 1], T[2 * i + 2])
+        self.d = d
+        self.T = T
+        self.unit = unit
+        self.funct = funct
+
+    def update(self, i, a):
+            i = i + 2 ** self.d - 1
+            while i > 0:
+                i = (i - 1) // 2
+                self.T[i] = self.funct(self.T[2 * i + 1], self.T[2 * i + 2])
+    
+    def query(self, a, b):
+        return self._query(a, b, 0, 0, 2 ** self.d)
+
+    def _query(self, a, b, k, l, r):
+        if r <= a or b <= l:
+            return self.unit 
+
+        if a <= l and r <= b:
+            return self.T[k]
+        else:
+            s1 = self._query(a, b, 2 * k + 1, l, (l + r) // 2)
+            s2 = self._query(a, b, 2 * k + 2, (l + r) // 2, r)
+            return self.funct(s1, s2)
+
+
 # for CodeJam
 
 def solve():
