@@ -13,8 +13,6 @@ def read_values(): return map(int, input().split())
 def read_index(): return map(lambda x: int(x) - 1, input().split())
 def read_list(): return list(read_values())
 def read_lists(N): return [read_list() for n in range(N)]
-def init_dp1(init, N): return [init for _ in range(N)]
-def init_dp2(init, N, M): return [[init for _ in range(M)] for _ in range(N)]
 
 
 class V:
@@ -56,29 +54,6 @@ class Comb:
             self.d_comb[(a, a - b)] = self.d_comb[(a, b)]
         return self.d_comb[(a, b)]
 
-
-def functional(N):
-    F = [1] * (N + 1)
-    for i in range(N):
-        F[i + 1] = (i + 1) * F[i] % mod
-    return F
-
-
-def inv(a):
-    return pow(a, mod - 2, mod)
-
-
-def C(F, a, b):
-    return F[a] * inv(F[a - b]) * inv(F[b]) % mod 
-
-
-def get_bit(n, i):
-    return n >> i & 1
-
-
-def read_graph(H, W, wall="#"):
-    return [wall * (W + 2)] + [wall + input() + wall for h in range(H)] + [wall * (W + 2)]
- 
 
 def LCS(a, b):
     dp = [[0 for _ in range(len(a) + 1)] for __ in range(len(b) + 1)]
