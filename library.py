@@ -210,6 +210,35 @@ class LCA:
         return self.k_parent[0][u]
 
 
+class CS1:
+    def __init__(self, A):
+        N = len(A)
+        S = [0] * (N + 1)
+        for i, a in enumerate(A):
+            S[i + 1] = S[i] + a
+        self.S = S
+
+    # [l, r)
+    def get(self, l, r):
+        S = self.S
+        return S[r] - S[l]
+
+
+class CS2:
+    def __init__(self, A):
+        H, W = len(A), len(A[0])
+        S = [[0 for _ in range(W + 1)] for _ in range(H + 1)]
+        for i in range(H):
+            for j in range(W):
+                S[i + 1][j + 1] = S[i + 1][j] + S[i][j + 1] - S[i][j] + A[i][j]
+        self.S = S
+
+    # [h1, h2) * [w1, w2)
+    def get(self, h1, w1, h2, w2):
+        S = self.S
+        return S[h2][w2] - S[h2][w1] - S[h1][w2] + S[h1][w1]
+ 
+
 # for CodeJam
 
 def solve():
