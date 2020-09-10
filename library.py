@@ -36,19 +36,19 @@ class V:
 
 
 
-def functional(N, mod):
+def functional(N):
     F = [1] * (N + 1)
     for i in range(N):
         F[i + 1] = (i + 1) * F[i] % mod
     return F
 
 
-def inv(a, mod):
+def inv(a):
     return pow(a, mod - 2, mod)
 
 
-def C(F, a, b, mod):
-    return F[a] * inv(F[a - b], mod) * inv(F[b], mod) % mod 
+def C(F, a, b):
+    return F[a] * inv(F[a - b]) * inv(F[b]) % mod 
 
 
 def get_bit(n, i):
@@ -109,18 +109,18 @@ class UF:
         return -self.state[self.get_parent(a)]
 
 
-def mat_mul(X, Y, mod):
+def mat_mul(X, Y):
     m = len(X)
     return [[sum(X[i][k] * Y[k][j] % mod for k in range(m)) % mod for j in range(m)] for i in range(m)]
 
 
-def mat_pow(M, k, mod):
+def mat_pow(M, k):
     m = len(M)
     res = [[1 if i == j else 0 for j in range(m)] for i in range(m)]
     while k > 0:
         if k & 1:
-            res = mat_mul(M, res, mod)
-        M = mat_mul(M, M, mod)
+            res = mat_mul(M, res)
+        M = mat_mul(M, M)
         k >>= 1
 
     return res
