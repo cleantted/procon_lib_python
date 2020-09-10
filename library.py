@@ -1,4 +1,5 @@
 import bisect
+from collections import deque
 import copy
 import heapq
 import sys
