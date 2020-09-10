@@ -35,6 +35,27 @@ class V:
         self.v = self.f(self.v, n) 
 
 
+class Comb:
+    def __init__(self, N):
+        F = [1] * (N + 1)
+        for i in range(N):
+            F[i + 1] = (i + 1) * F[i] % mod
+
+        self.d_inv = {}
+        self.d_comb = {}
+        self.F = F
+
+    def inv(self, a):
+        if a not in self.d_inv:
+            self.d_inv[a] = pow(a, mod - 2, mod)
+        return self.d_inv[a]
+
+    def comb(self, a, b):
+        if (a, b) not in self.d_comb:
+            self.d_comb[(a, b)] = (self.F[a] * self.inv(self.F[a - b]) * self.inv(self.F[b])) % mod
+            self.d_comb[(a, a - b)] = self.d_comb[(a, b)]
+        return self.d_comb[(a, b)]
+
 
 def functional(N):
     F = [1] * (N + 1)
