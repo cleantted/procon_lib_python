@@ -16,7 +16,7 @@ def read_list(): return list(read_values())
 def read_lists(N): return [read_list() for n in range(N)]
 
 
-class V:
+class Val:
     def __init__(self, f, v=None):
         self.f = f
         self.v = v
