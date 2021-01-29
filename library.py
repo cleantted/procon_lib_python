@@ -252,6 +252,7 @@ class SegmentTree:
 
     def update(self, i, a):
             i = i + 2 ** self.d - 1
+            self.T[i] = a
             while i > 0:
                 i = (i - 1) // 2
                 self.T[i] = self.funct(self.T[2 * i + 1], self.T[2 * i + 2])
