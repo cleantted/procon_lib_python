@@ -271,6 +271,57 @@ class SegmentTree:
             return self.funct(s1, s2)
 
 
+class BIT:
+    def __init__(self, N):
+        self.N = N
+        self.T = [0] * (N + 1)
+ 
+    def add(self, i, x):
+        i += 1
+        while i <= self.N:
+            self.T[i] += x
+            i += i & -i
+ 
+    def _sum(self, i):
+        s = 0
+        i += 1
+        while i > 0:
+            s += self.T[i]
+            i -= i & -i
+        return s
+ 
+    def sum(self, i, j):
+        si = self._sum(i - 1)
+        sj = self._sum(j)
+        return sj - si
+
+
+class DPTravel:
+    def __init__(self, N, C):
+        self.C = C
+        self.N = N
+        assert((2 ** N) * (N ** 2) < 10 ** 9)
+
+
+    def query(self, start):
+        N = self.N
+        C = self.C
+        INF = 10 ** 20
+        dp = [[INF] * (1 << N) for _ in range(N)]
+        dp[start][0] = 0
+        for i in range(1 << N):
+            for k in range(N):
+                if dp[k][i] == INF:
+                    continue
+
+                for j in range(N):
+                    if (i >> j) & 1:
+                        continue
+                    dp[j][i | (1 << j)] = min(dp[j][i | (1 << j)], dp[k][i] + C[k][j])
+        
+        return dp[start][(1 << N) - 1]
+
+
 # for CodeJam
 
 def solve():
