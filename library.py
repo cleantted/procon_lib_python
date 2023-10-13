@@ -1,38 +1,6 @@
-
-import copy
-import heapq
-import itertools
-import math
-import operator
-import sys
-from bisect import bisect, bisect_left, bisect_right, insort
-from collections import Counter, deque
-from fractions import Fraction
-from functools import cmp_to_key, lru_cache, partial
-from inspect import currentframe
-from math import ceil, gcd, log10, pi, sqrt
-
-# import pypyjit
-# pypyjit.set_param('max_unroll_recursion=-1')
-input = sys.stdin.readline
-sys.setrecursionlimit(10000000)
-# mod = 10 ** 9 + 7
 mod = 998244353
-# mod = 1 << 128
-# mod = 10 ** 30 + 1
 INF = 1 << 61
 DIFF = 10 ** -9
-DX = [1, 0, -1, 0, 1, 1, -1, -1]
-DY = [0, 1, 0, -1, 1, -1, 1, -1]
-
-def read_values(): return tuple(map(int, input().split()))
-def read_index(): return tuple(map(lambda x: int(x) - 1, input().split()))
-def read_list(): return list(read_values())
-def read_lists(N): return [read_list() for _ in range(N)]
-def dprint(*values): print(*values, file=sys.stderr)
-def dprint2(*values):
-    names = {id(v): k for k, v in currentframe().f_back.f_locals.items()}
-    dprint(", ".join(f"{names.get(id(value), '???')}={repr(value)}" for value in values))
 
 
 class Val:
@@ -50,7 +18,7 @@ class Val:
         if self.v is None:
             self.v = n
             return
-        self.v = self.f(self.v, n) 
+        self.v = self.f(self.v, n)
 
 
 class Comb:
@@ -144,6 +112,7 @@ def mat_pow(M, k):
 
 
 def dijk(A, h0, w0):
+    import heapq
     H = len(A)
     W = len(A[0])
  
@@ -498,6 +467,8 @@ class BIT:
 
 # https://juppy.hatenablog.com/entry/2020/09/03/%E9%A0%86%E5%BA%8F%E4%BB%98%E3%81%8D%E9%9B%86%E5%90%88%E3%82%82%E3%81%A9%E3%81%8D_Python_1
 class OrderedBIT:
+    import bisect
+
     def __init__(self, A):
         self.A = A
         self.bit = BIT(len(A) + 1)
@@ -544,7 +515,7 @@ class DPTravel:
     def __init__(self, N, C):
         self.C = C
         self.N = N
-        assert((2 ** N) * (N ** 2) < 10 ** 9)
+        assert (2 ** N) * (N ** 2) < 10 ** 9
 
 
     def query(self, start):
@@ -773,7 +744,6 @@ class SortedSet:
         return (i, bisect_right(a[i], x))
 
 
-
 class SortedMultiset():
     # https://github.com/tatyam-prime/SortedSet/blob/main/SortedMultiset.py
     import math
@@ -1000,7 +970,7 @@ class Flow:
 
     def add_edge(self, u, v, cap):
         self.G[u][v] = cap
-        self.G[v][u] = 0 
+        self.G[v][u] = 0
 
     def add_multi_edge(self, u, v, cap1, cap2):
         self.G[u][v] = cap1
@@ -1046,6 +1016,8 @@ class Flow:
 
 
 class MinCostFlow:
+    import heapq
+
     def __init__(self, N):
         self.N = N
         self.graph = [[] for _ in range(N)]
@@ -1306,7 +1278,7 @@ class Flow:
 
     def add_edge(self, u, v, cap):
         self.G[u][v] = cap
-        self.G[v][u] = 0 
+        self.G[v][u] = 0
 
     def add_multi_edge(self, u, v, cap1, cap2):
         self.G[u][v] = cap1
@@ -1351,8 +1323,10 @@ class Flow:
 
 
 class Fraction(object):
+    import math
+
     def __init__(self, a=0, b=1):
-        assert(b != 0)
+        assert b != 0
         if b < 0:
             a *= -1
             b *= -1
@@ -1370,6 +1344,8 @@ class Fraction(object):
 
 
 # Mo's Algorithm
+from typing import List, Tuple, Callable
+import math
 def mo_algorithm(
         N: int,
         Q: int,
@@ -1406,8 +1382,7 @@ def mo_algorithm(
     return res
 
 
-
-# for GCJ
+# for MHC
 
 def solve():
     return ""
