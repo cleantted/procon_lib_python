@@ -1,3 +1,5 @@
+# https://github.com/cleantted/procon_lib_python
+
 import copy
 import heapq
 import itertools
