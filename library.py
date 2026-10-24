@@ -273,6 +273,7 @@ class SegmentTree:
             T[M + i] = s
         for i in range(M - 1, 0, -1):
             T[i] = funct(T[2 * i], T[2 * i + 1])
+        self.N = N
         self.M = M
         self.T = T
         self.unit = unit
@@ -324,6 +325,60 @@ class SegmentTree:
         res = self.funct(left_value, right_value)
 
         return res
+
+    # f(prod(l, r))) = True となるような、最大のrを求める, O(logN)
+    # f(e) = True である必要がある
+    def max_right(self, l, f):
+        if l == self.N:
+            return self.N
+
+        l += self.M
+        v = self.unit
+        while True:
+            while l % 2 == 0:
+                l >>= 1
+
+            if (not f(self.funct(v, self.T[l]))):
+                while l < self.M:
+                    l *= 2
+                    if f(self.funct(v, self.T[l])):
+                        v = self.funct(v, self.T[l])
+                        l += 1
+                return l - self.M 
+
+            v = self.funct(v, self.T[l])
+            l += 1
+
+            if (l & -l) == l:
+                break
+
+        return self.N
+
+    # f(prod(l, r))) = True となるような、最小のlを求める, O(logN)
+    # f(e) = True である必要がある
+    def min_left(self, r, f):
+        if r == 0:
+            return 0
+
+        r += self.M
+        v = self.unit
+        while True:
+            r -= 1
+            while r > 1 and (r % 2) == 1:
+                r >>= 1
+
+            if not f(self.funct(self.T[r], v)):
+                while r < self.M:
+                    r = 2 * r + 1
+                    if f(self.funct(self.T[r], v)):
+                        v = self.funct(self.T[r], v)
+                        r -= 1
+                return r + 1 - self.M
+
+            v = self.funct(self.T[r], v)
+            if (r & -r) == r:
+                break
+        return 0
 
     def at(self, i):
         return self.T[i + self.M]
@@ -446,7 +501,8 @@ class BIT:
             s += self.T[i]
             i -= i & -i
         return s
- 
+
+    #[i, j]
     def sum(self, i, j):
         si = self._sum(i - 1)
         sj = self._sum(j)
@@ -463,6 +519,13 @@ class BIT:
                 x += k
             k //= 2
         return x
+
+    def __str__(self):
+        S = []
+        for i in range(self.N):
+            t = self.sum(i, i)
+            S.append(t)
+        return str(S)
 
 
 # https://juppy.hatenablog.com/entry/2020/09/03/%E9%A0%86%E5%BA%8F%E4%BB%98%E3%81%8D%E9%9B%86%E5%90%88%E3%82%82%E3%81%A9%E3%81%8D_Python_1
@@ -575,10 +638,10 @@ def next_comb(n):
 
 
 class SortedSet:
-    # https://github.com/tatyam-prime/SortedSet/blob/main/SortedSet.py
-    from math import sqrt, ceil
+    # ref: https://github.com/tatyam-prime/SortedSet/blob/main/SortedSet.py
     from bisect import bisect_left, bisect_right
-    from typing import Iterable, TypeVar, Union, Tuple
+    from math import ceil, sqrt
+    from typing import Iterable, Tuple, TypeVar, Union
     T = TypeVar('T')
     BUCKET_RATIO = 50
     REBUILD_RATIO = 170
@@ -745,10 +808,10 @@ class SortedSet:
 
 
 class SortedMultiset():
-    # https://github.com/tatyam-prime/SortedSet/blob/main/SortedMultiset.py
+    # ref: https://github.com/tatyam-prime/SortedSet/blob/main/SortedMultiset.py
     import math
     from bisect import bisect_left, bisect_right, insort
-    from typing import Generic, Iterable, Iterator, TypeVar, Union, List
+    from typing import Generic, Iterable, Iterator, List, TypeVar, Union
     T = TypeVar('T')
     BUCKET_RATIO = 50
     REBUILD_RATIO = 170
@@ -1014,7 +1077,6 @@ class Flow:
         return res
 
 
-
 class MinCostFlow:
     import heapq
 
@@ -1212,8 +1274,7 @@ class Convolution():
                 inow *= self.sum_ie[(~s & -~s).bit_length() - 1]
                 inow %= mod
  
-    def convolution(self, a, b):
-        mod = self.mod
+    def convolution(self, a, b, mod):
         n = len(a)
         m = len(b)
         if not n or not m: return []
@@ -1271,57 +1332,6 @@ class Convolution():
         return c
 
 
-class Flow:
-    def __init__(self, V):
-        self.V = V
-        self.G = [dict() for _ in range(V)]
-
-    def add_edge(self, u, v, cap):
-        self.G[u][v] = cap
-        self.G[v][u] = 0
-
-    def add_multi_edge(self, u, v, cap1, cap2):
-        self.G[u][v] = cap1
-        self.G[v][u] = cap2
-
-    def wfs(self, s, g):
-        S = [(s, -1, INF)]
-        P = [-1] * self.V
-        while S:
-            u, p, f = S.pop()
-            if u == g:
-                break
-            
-            for v, c in self.G[u].items():
-                if c <= 0:
-                    continue
-    
-                if P[v] != -1:
-                    continue
-    
-                t = min(f, c)
-                P[v] = u
-                S.append((v, u, t))
-        else:
-            return 0
-
-        while u != s:
-            p = P[u]
-            self.G[p][u] -= f
-            self.G[u][p] += f
-            u = p
-    
-        return f
-
-    def flow(self, s, g):
-        res = 0
-        r = self.wfs(s, g)
-        while r > 0:
-            res += r
-            r = self.wfs(s, g)
-        return res
-
-
 class Fraction(object):
     import math
 
@@ -1344,8 +1354,10 @@ class Fraction(object):
 
 
 # Mo's Algorithm
-from typing import List, Tuple, Callable
 import math
+from typing import Callable, List, Tuple
+
+
 def mo_algorithm(
         N: int,
         Q: int,
@@ -1380,6 +1392,195 @@ def mo_algorithm(
 
         res[q] = v
     return res
+
+
+# ref: https://cp-algorithms.com/string/suffix-array.html
+# O(N log^2(N))
+def build_sa_rank(S):
+    n = len(S)
+
+    sa = list(range(n))
+    rank = [ord(c) for c in S]
+    tmp = [0] * n
+
+    k = 1
+    while k < n:
+        sa.sort(
+            key=lambda i: (
+                rank[i],
+                rank[i + k] if i + k < n else -1,
+            )
+        )
+
+        tmp[sa[0]] = 0
+
+        for j in range(1, n):
+            i1 = sa[j - 1]
+            i2 = sa[j]
+
+            p1 = (
+                rank[i1],
+                rank[i1 + k] if i1 + k < n else -1,
+            )
+            p2 = (
+                rank[i2],
+                rank[i2 + k] if i2 + k < n else -1,
+            )
+
+            tmp[i2] = tmp[i1] + (p1 != p2)
+
+        rank, tmp = tmp, rank
+
+        if rank[sa[-1]] == n - 1:
+            break
+
+        k *= 2
+
+    sa_rank = [0] * n
+
+    for r, i in enumerate(sa):
+        sa_rank[i] = r
+
+    return sa_rank
+
+
+# ref: https://cp-algorithms.com/string/suffix-automaton.html#
+class SAM:
+    def __init__(self, S):
+        length, link, state, finish, first_pos = self._build(S)
+
+        self.length = length
+        self.link = link
+        self.state = state
+        self.finish = finish
+        self.first_pos = first_pos
+
+        self.S = S
+        self.sa_rank = build_sa_rank(S)
+
+
+    def _build(self, S):
+        length = [0]
+        link = [-1]
+        state = [{}]
+        first_pos = [-1]
+
+        last = 0
+
+        for i, c in enumerate(S):
+            cur = len(length)
+
+            length.append(length[last] + 1)
+            link.append(-1)
+            state.append({})
+            first_pos.append(i)
+
+            p = last
+
+            while p != -1 and c not in state[p]:
+                state[p][c] = cur
+                p = link[p]
+
+            if p == -1:
+                link[cur] = 0
+            else:
+                q = state[p][c]
+
+                if length[p] + 1 == length[q]:
+                    link[cur] = q
+                else:
+                    clone = len(length)
+
+                    length.append(length[p] + 1)
+                    link.append(link[q])
+                    state.append(dict(state[q].items()))
+                    first_pos.append(first_pos[q])
+
+                    link[q] = clone
+                    link[cur] = clone
+
+                    while p != -1 and state[p].get(c, -1) == q:
+                        state[p][c] = clone
+                        p = link[p]
+
+            last = cur
+
+        finish = [False] * len(length)
+
+        while last != -1:
+            finish[last] = True
+            last = link[last]
+
+        return length, link, state, finish, first_pos
+
+
+    def query(self, T):
+        v = 0
+        current_length = 0
+
+        res = (0, -INF, 0)
+        for c in T:
+            while v != 0 and c not in self.state[v]:
+                v = self.link[v]
+                current_length = self.length[v]
+
+            if c in self.state[v]:
+                v = self.state[v][c]
+                current_length += 1
+            else:
+                v = 0
+                current_length = 0
+                continue
+
+            start = self.first_pos[v] - current_length + 1
+            rank = self.sa_rank[start]
+
+            res = max(res, (current_length, -rank, start))
+
+        return res
+
+
+class Trie:
+    def __init__(self):
+        self.L = [{}]
+        self.fin = set()
+        self.depth = [0]
+
+    def add(self, S):
+        L = self.L
+        depth = self.depth
+        now = 0
+        for s in S:
+            if s not in L[now]:
+                L[now][s] = len(L)
+                depth.append(depth[now] + 1)
+                L.append({})
+
+            now = L[now][s]
+        self.fin.add(now)
+
+
+class AhoCorasick:
+    def __init__(self, trie: Trie):
+        self.trie = trie
+        failure = [-1] * len(trie.L)
+
+        que = deque()
+        que.append(0)
+        failure[0] = 0
+        while que:
+            i = que.popleft()
+            for c, j in trie.L[i].items():
+                if i == 0:
+                    failure[j] = 0
+                else:
+                    f = failure[i]
+                    while f != 0 and c not in trie.L[f]:
+                        f = failure[f]
+                    failure[j] = trie.L[f].get(c, 0)
+                que.append(j)
+
+        self.failure = failure
 
 
 # for MHC

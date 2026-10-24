@@ -29,17 +29,24 @@ def read_index(): return tuple(map(lambda x: int(x) - 1, input().split()))
 def read_list(): return list(read_values())
 def read_lists(N): return [read_list() for _ in range(N)]
 def dprint(*values): print(*values, file=sys.stderr)
-def dprint2(*values):
-    names = {id(v): k for k, v in currentframe().f_back.f_locals.items()}
-    dprint(", ".join(f"{names.get(id(value), '???')}={repr(value)}" for value in values))
 
 
-def main():
+def solve():
     N = int(input())
     S = input().strip()
     N, M = read_values()
     A = read_list()
     L = read_lists(M)
+
+
+def main():
+    T = 1
+    # T = int(input())
+
+    res = []
+    for _ in range(T):
+        res.append(solve())
+    print(*res, sep="\n")
 
 
 if __name__ == "__main__":
