@@ -348,6 +348,65 @@ class SegmentTree:
         return str(self.T[self.M:])
 
 
+class DistanceGraph:
+    import heapq
+
+    def __init__(self, N):
+        self.N = N
+        self.G = [[] for _ in range(N)]
+
+    def add_edge1(self, u, v, d=1):
+        self.G[u].append((v, d))
+
+    def add_edge2(self, u, v, d=1):
+        self.G[u].append((v, d))
+        self.G[v].append((u, d))
+
+    def calc_min_dist(self, start):
+        N = self.N
+        G = self.G
+        D = [INF] * N
+        seen = [False] * N
+
+        D[start] = 0
+        S = [(0, start)]
+        while S:
+            d, i = heapq.heappop(S)
+            if seen[i]:
+                continue
+            seen[i] = True
+
+            for j, w in G[i]:
+                if seen[w]:
+                    continue
+
+                d2 = d + w
+                if D[j] >= d2:
+                    continue
+                D[j] = d2
+                S.append((d2, j))
+
+        return D
+
+    def calc_all_min_dist(self):
+        assert self.N ** 3 <= 10 ** 9
+        N = self.N
+        G = self.G
+
+        D = [[INF] * N for _ in range(N)]
+
+        for i in range(N):
+            for j, d in G[i]:
+                D[i][j] = d
+            D[i][i] = 0
+
+        for k in range(N):
+            for i in range(N):
+                for j in range(N):
+                    D[i][j] = min(D[i][j], D[i][k] + D[k][j])
+
+        return D
+
 class LasySegmentTree:
     __slots__ = [
         "N", "num", "T", "lazy", "unit",
