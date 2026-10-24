@@ -3,24 +3,6 @@ INF = 1 << 61
 DIFF = 10 ** -9
 
 
-class Val:
-    def __init__(self, f, v=None):
-        self.f = f
-        self.v = v
- 
-    def __str__(self):
-        return str(self.v)
- 
-    def ud(self, n):
-        if n is None:
-            return
-
-        if self.v is None:
-            self.v = n
-            return
-        self.v = self.f(self.v, n)
-
-
 class Comb:
     __slots__ = ["d_comb", "F", "FI"]
     def __init__(self, N):
@@ -111,39 +93,18 @@ def mat_pow(M, k):
     return res
 
 
-def dijk(A, h0, w0):
-    import heapq
-    H = len(A)
-    W = len(A[0])
- 
-    Q = [(0, (h0, w0))]
-    P = [[False for _ in range(W)] for _ in range(H)]
-    D = [[10 ** 10 for _ in range(W)] for _ in range(H)]
-    D[h0][w0] = 0
-    while Q:
-        c, (h, w) = heapq.heappop(Q)
-        if P[h][w]:
+def create_primes(N):
+    F = [False] * (N + 1)
+
+    P = []
+    for p in range(2, N + 1):
+        if F[p]:
             continue
-        P[h][w] = True
-        D[h][w] = c
- 
-        if h != 0 and not P[h - 1][w]:
-            if D[h - 1][w] > c + A[h - 1][w]:
-                heapq.heappush(Q, (c + A[h - 1][w], (h - 1, w)))
- 
-        if h != H - 1 and not P[h + 1][w]:
-            if D[h + 1][w] > c + A[h + 1][w]:
-                heapq.heappush(Q, (c + A[h + 1][w], (h + 1, w)))
- 
-        if w != 0 and not P[h][w - 1]:
-            if D[h][w - 1] > c + A[h][w - 1]:
-                heapq.heappush(Q, (c + A[h][w - 1], (h, w - 1)))
- 
-        if w != W - 1 and not P[h][w + 1]:
-            if D[h][w + 1] > c + A[h][w + 1]:
-                heapq.heappush(Q, (c + A[h][w + 1], (h, w + 1)))
- 
-    return D
+        P.append(p)
+        for i in range(p, N + 1, p):
+            F[i] = True
+
+    return P
 
 
 def LIS(A, strict=True):
@@ -388,19 +349,23 @@ class SegmentTree:
 
 
 class LasySegmentTree:
-    __slots__ = ["N", "num", "T", "lazy", "unit", "op", "mapping", "composition", "id_f"]
+    __slots__ = [
+        "N", "num", "T", "lazy", "unit",
+        "op", "mapping", "composition", "id_f",
+    ]
+
     def __init__(self, S, unit, op, mapping, composition, id_f):
         N = len(S)
         num = 1 << ((N - 1).bit_length())
+
         T = [unit for _ in range(2 * num)]
         for i, s in enumerate(S):
             T[i + num] = s
         for i in range(num - 1, 0, -1):
             T[i] = op(T[2 * i], T[2 * i + 1])
-        
+
         self.N = N
         self.num = num
-
         self.T = T
         self.lazy = [id_f for _ in range(2 * num)]
         self.unit = unit
@@ -410,6 +375,9 @@ class LasySegmentTree:
         self.id_f = id_f
 
     def update(self, a, b, f):
+        if a >= b:
+            return
+
         a += self.num
         b += self.num
 
@@ -417,71 +385,102 @@ class LasySegmentTree:
         bm = b // (b & -b) - 1
 
         self.propagate_above(am)
-        self.propagate_above(bm)
+        if am != bm:
+            self.propagate_above(bm)
+
+        lazy = self.lazy
+        composition = self.composition
+
         while a < b:
             if a & 1:
-                self.lazy[a] = self.composition(self.lazy[a], f)
+                lazy[a] = composition(lazy[a], f)
                 a += 1
             if b & 1:
                 b -= 1
-                self.lazy[b] = self.composition(self.lazy[b], f)
+                lazy[b] = composition(lazy[b], f)
             a >>= 1
             b >>= 1
 
         self.calc_above(am)
-        self.calc_above(bm)
+        if am != bm:
+            self.calc_above(bm)
 
     def calc(self, i):
         return self.mapping(self.lazy[i], self.T[i])
 
     def calc_above(self, i):
+        T = self.T
+        lazy = self.lazy
+        op = self.op
+        mapping = self.mapping
+
         i >>= 1
         while i:
-            self.T[i] = self.op(self.calc(2 * i), self.calc(2 * i + 1))
+            j = i << 1
+            T[i] = op(
+                mapping(lazy[j], T[j]),
+                mapping(lazy[j + 1], T[j + 1]),
+            )
             i >>= 1
 
     def propagate(self, i):
-        self.T[i] = self.mapping(self.lazy[i], self.T[i])
-        self.lazy[2 * i] = self.composition(self.lazy[2 * i], self.lazy[i])
-        self.lazy[2 * i + 1] = self.composition(self.lazy[2 * i + 1], self.lazy[i])
-        self.lazy[i] = self.id_f
+        lazy = self.lazy
+        f = lazy[i]
+        if f == self.id_f:
+            return
+
+        T = self.T
+        composition = self.composition
+        j = i << 1
+
+        T[i] = self.mapping(f, T[i])
+        lazy[j] = composition(lazy[j], f)
+        lazy[j + 1] = composition(lazy[j + 1], f)
+        lazy[i] = self.id_f
 
     def propagate_above(self, i):
-        for h in range(i.bit_length(), 0, -1):
-            self.propagate(i >> h)
+        propagate = self.propagate
+        for h in range(i.bit_length() - 1, 0, -1):
+            propagate(i >> h)
 
     def query(self, a, b):
+        if a >= b:
+            return self.unit
+
         a += self.num
         b += self.num
 
         am = a // (a & -a)
         bm = b // (b & -b) - 1
+
         self.propagate_above(am)
-        self.propagate_above(bm)
+        if am != bm:
+            self.propagate_above(bm)
+
+        T = self.T
+        lazy = self.lazy
+        op = self.op
+        mapping = self.mapping
 
         vl = self.unit
         vr = self.unit
         while a < b:
             if a & 1:
-                vl = self.op(vl, self.calc(a))
+                vl = op(vl, mapping(lazy[a], T[a]))
                 a += 1
             if b & 1:
                 b -= 1
-                vr = self.op(self.calc(b), vr)
+                vr = op(mapping(lazy[b], T[b]), vr)
             a >>= 1
             b >>= 1
-        return self.op(vl, vr)
+
+        return op(vl, vr)
 
     def at(self, i):
-        return self.T[i + self.num]
+        return self.query(i, i + 1)
 
     def __str__(self):
-        S = []
-        for i in range(self.N):
-            t = self.query(i, i + 1)
-            S.append(t)
-        return str(S)
-
+        return str([self.query(i, i + 1) for i in range(self.N)])
 
 class BIT:
     def __init__(self, N):
