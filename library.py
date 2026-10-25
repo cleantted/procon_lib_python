@@ -377,14 +377,14 @@ class DistanceGraph:
             seen[i] = True
 
             for j, w in G[i]:
-                if seen[w]:
+                if seen[j]:
                     continue
 
                 d2 = d + w
-                if D[j] >= d2:
+                if D[j] <= d2:
                     continue
                 D[j] = d2
-                S.append((d2, j))
+                heapq.heappush(S, (d2, j))
 
         return D
 
